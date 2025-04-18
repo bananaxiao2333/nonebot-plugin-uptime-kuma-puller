@@ -1,0 +1,32 @@
+[project]
+name = "nonebot_plugin_uptime_kuma_puller"
+version = "0.0.1"
+description = "This is a plugin that can generate a UptimeKuma status page summary for your Nonebot"
+authors = [
+  { name = "HTony03", email = "HTony03@foxmail.com" },
+]
+readme = "README.md"
+keywords = ["nonebot", "kuma", "qqbot"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Plugins",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+license = "MIT"
+
+dependencies = [
+    "aiohttp~=3.11",
+    "nonebot-adapter-onebot~=2.4",
+    "nonebot-plugin-apscheduler~=0.3",
+    "nonebot2~=2.3"
+]
+
+[project.urls]
+homepage = "https://github.com/bananaxiao2333/nonebot-plugin-uptime-kuma-puller"
+repository = "https://github.com/bananaxiao2333/nonebot-plugin-uptime-kuma-puller"
+changelog = "https://github.com/bananaxiao2333/nonebot-plugin-uptime-kuma-puller/releases"
+issue = "https://github.com/bananaxiao2333/nonebot-plugin-uptime-kuma-puller/issues"
