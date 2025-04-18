@@ -12,7 +12,7 @@ _✨ NoneBot UptimeKuma 抓取 ✨_
 
 
 <a href="./LICENSE">
-    <img src="https://img.shields.io/github/license/owner/nonebot-plugin-template.svg" alt="license">
+    <img src="https://img.shields.io/github/license/bananaxiao2333/nonebot-plugin-uptime-kuma-puller.svg" alt="license">
 </a>
 <a href="https://pypi.python.org/pypi/nonebot-plugin-template">
     <img src="https://img.shields.io/pypi/v/nonebot-plugin-template.svg" alt="pypi">
