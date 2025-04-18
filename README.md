@@ -6,9 +6,9 @@
 
 <div align="center">
 
-# nonebot-plugin-template
+# nonebot-plugin-uptime-kuma-puller
 
-_✨ NoneBot 插件简单描述 ✨_
+_✨ NoneBot UptimeKuma 抓取 ✨_
 
 
 <a href="./LICENSE">
@@ -21,7 +21,7 @@ _✨ NoneBot 插件简单描述 ✨_
 
 </div>
 
-这是一个 nonebot2 插件项目的模板库, 你可以直接使用本模板创建你的 nonebot2 插件项目的仓库
+这是一个简单插件，它可以从指定的UptimeKuma展示页面抓取消息并且发送出去。
 
 <details open>
 <summary>模板库使用方法</summary>
