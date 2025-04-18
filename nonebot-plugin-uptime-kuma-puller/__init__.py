@@ -5,6 +5,7 @@ from nonebot.rule import to_me
 from nonebot.plugin import on_command
 from nonebot.permission import SUPERUSER
 import nonebot.permission
+from nonebot.plugin import PluginMetadata
 from nonebot.log import logger
 # from opengsq.protocols import GameSpy4
 #TODO: likely useless import, delete
