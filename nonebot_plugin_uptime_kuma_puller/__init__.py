@@ -31,7 +31,7 @@ query_uptime_kuma = on_command("健康", aliases={"uptime"})
 
 query_url = "https://uptime.ooooo.ink"
 # TODO: setup via env
-proj_name_list = ["orange","starcraft"]
+proj_name_list = ["orange","starcraft","fse"]
 
 def takeSecond(elem):
     return elem[1]
@@ -108,6 +108,7 @@ async def handle_function(matcher: Matcher, args: Message = CommandArg()):
 
 @query_uptime_kuma.got("proj_name", prompt=f"请输入项目（可供查询的项目：{str(proj_name_list)}")
 async def get_proj_name(proj_name: str = ArgPlainText()):
+    proj_name = proj_name.lower()
     if proj_name not in proj_name_list:
         await query_uptime_kuma.reject(f"你想查询的 {proj_name} 不在列表（{str(proj_name_list)}）中，请重新输入！")
     result = await OrangeUptimeQuery(proj_name)
