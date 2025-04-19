@@ -37,6 +37,7 @@ def takeSecond(elem):
 
 async def OrangeUptimeQuery():
     ret = ""
+    msg = ""
     async with aiohttp.ClientSession() as session:
         async with session.get(main_api) as response:
             if response.status != 200:
