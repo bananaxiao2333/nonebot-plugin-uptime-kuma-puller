@@ -1,10 +1,20 @@
 name: Publish
 
+#on:
+#  push:
+ #   tags:
+ #     - '*'
+ # workflow_dispatch:
+
 on:
-  push:
-    tags:
-      - '*'
-  workflow_dispatch:
+  release:
+    types: [published]
+    
+
+permissions:
+  contents: read
+  id-token: write  # Required for OIDC authentication
+    
 
 jobs:
   pypi-publish:
@@ -34,3 +44,5 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
+      env:
+        TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
