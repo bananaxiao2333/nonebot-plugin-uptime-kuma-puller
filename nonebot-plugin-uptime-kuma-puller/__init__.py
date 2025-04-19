@@ -1,19 +1,7 @@
-from nonebot import require, get_bot
+from nonebot import require
 require("nonebot_plugin_apscheduler")
-from nonebot_plugin_apscheduler import scheduler
-from nonebot.rule import to_me
 from nonebot.plugin import on_command
-from nonebot.permission import SUPERUSER
-import nonebot.permission
-from nonebot.plugin import PluginMetadata
-from nonebot.log import logger
-# from opengsq.protocols import GameSpy4
-#TODO: likely useless import, delete
 from datetime import datetime
-from nonebot.params import RawCommand
-from nonebot.adapters.onebot.v11 import Bot as OneBot
-from nonebot.adapters.onebot.v11 import GroupMessageEvent,Bot,GroupRequestEvent
-import json
 import requests
 
 
