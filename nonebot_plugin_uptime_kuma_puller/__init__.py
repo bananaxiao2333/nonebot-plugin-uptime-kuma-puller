@@ -41,6 +41,7 @@ async def OrangeUptimeQuery(proj_name):
     heartbeat_api = f"{query_url}/api/status-page/heartbeat/{proj_name}"
     ret = ""
     msg = ""
+    
     async with aiohttp.ClientSession() as session:
         async with session.get(main_api) as response:
             if response.status != 200:
@@ -54,14 +55,18 @@ async def OrangeUptimeQuery(proj_name):
                 return msg
             heartbeat_content_js = await response.json()
 
+    proj_title = content_js["config"]["title"]
+
     # 获取监控项名称列表
     pub_list = content_js["publicGroupList"]
     pub_list_ids = []
     for pub_group in pub_list:
         for pub_sbj in pub_group["monitorList"]:
             tag = ""
-            if pub_sbj["tags"]:
-                tag = f"[{pub_sbj['tags'][0]['name']}]"
+            if "tags" in pub_sbj:
+                print(pub_sbj)
+                if pub_sbj["tags"] != []:
+                    tag = f"[{pub_sbj['tags'][0]['name']}]"
             pub_sbj_name = f"{tag}{pub_sbj['name']}"
             pub_list_ids.append([pub_sbj["id"], pub_sbj_name])
 
@@ -93,7 +98,7 @@ async def OrangeUptimeQuery(proj_name):
         ret += f"{pub_sbj[1]} {pub_sbj[2]}\n"
     ret += temp_txt
 
-    msg += f"**查询结果**\n{ret}\n*******"
+    msg += f"**{proj_title}查询结果**\n{ret}\n*******"
     return msg
 
 @query_uptime_kuma.handle()
@@ -101,10 +106,9 @@ async def handle_function(matcher: Matcher, args: Message = CommandArg()):
     if args.extract_plain_text():
         matcher.set_arg("proj_name", args)
 
-@query_uptime_kuma.got("proj_name", prompt="请输入项目")
+@query_uptime_kuma.got("proj_name", prompt=f"请输入项目（可供查询的项目：{str(proj_name_list)}")
 async def get_proj_name(proj_name: str = ArgPlainText()):
     if proj_name not in proj_name_list:
-        await query_uptime_kuma.send(f"可供查询的项目：{str(proj_name_list)}")
-        await query_uptime_kuma.reject(f"你想查询的 {proj_name} 不在列表中，请重新输入！")
+        await query_uptime_kuma.reject(f"你想查询的 {proj_name} 不在列表（{str(proj_name_list)}）中，请重新输入！")
     result = await OrangeUptimeQuery(proj_name)
     await query_uptime_kuma.finish(result)
