@@ -4,6 +4,10 @@ from nonebot.plugin import on_command
 from datetime import datetime
 import aiohttp
 from nonebot.plugin import PluginMetadata
+from nonebot.matcher import Matcher
+from nonebot.params import ArgPlainText
+from nonebot.adapters import Message
+from nonebot.params import CommandArg
 
 
 __version__ = "0.0.1"
@@ -23,31 +27,30 @@ __plugin_meta__ = PluginMetadata(
 
 
 
-ou_q = on_command("健康", aliases={"uptime"})
+query_uptime_kuma = on_command("健康", aliases={"uptime"})
 
 query_url = "https://uptime.ooooo.ink"
 # TODO: setup via env
-proj_name = "orange"
-
-main_api = f"{query_url}/api/status-page/{proj_name}"
-heartbeat_api = f"{query_url}/api/status-page/heartbeat/{proj_name}"
+proj_name_list = ["orange","starcraft"]
 
 def takeSecond(elem):
     return elem[1]
 
-async def OrangeUptimeQuery():
+async def OrangeUptimeQuery(proj_name):
+    main_api = f"{query_url}/api/status-page/{proj_name}"
+    heartbeat_api = f"{query_url}/api/status-page/heartbeat/{proj_name}"
     ret = ""
     msg = ""
     async with aiohttp.ClientSession() as session:
         async with session.get(main_api) as response:
             if response.status != 200:
-                msg += f"OrangeUptime主要接口查询失败：Http error {response.status}"
+                msg += f"主要接口查询失败：Http error {response.status}"
                 return msg
             content_js = await response.json()
 
         async with session.get(heartbeat_api) as response:
             if response.status != 200:
-                msg += f"OrangeUptime心跳接口查询失败：Http error {response.status}"
+                msg += f"心跳接口查询失败：Http error {response.status}"
                 return msg
             heartbeat_content_js = await response.json()
 
@@ -93,7 +96,15 @@ async def OrangeUptimeQuery():
     msg += f"**查询结果**\n{ret}\n*******"
     return msg
 
-@ou_q.handle()
-async def handle_function():
-    result = await OrangeUptimeQuery()
-    await ou_q.finish(result)
+@query_uptime_kuma.handle()
+async def handle_function(matcher: Matcher, args: Message = CommandArg()):
+    if args.extract_plain_text():
+        matcher.set_arg("proj_name", args)
+
+@query_uptime_kuma.got("proj_name", prompt="请输入项目")
+async def get_proj_name(proj_name: str = ArgPlainText()):
+    if proj_name not in proj_name_list:
+        await query_uptime_kuma.send(f"可供查询的项目：{str(proj_name_list)}")
+        await query_uptime_kuma.reject(f"你想查询的 {proj_name} 不在列表中，请重新输入！")
+    result = await OrangeUptimeQuery(proj_name)
+    await query_uptime_kuma.finish(result)
