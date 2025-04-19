@@ -10,7 +10,7 @@ from nonebot.adapters import Message
 from nonebot.params import CommandArg
 
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_uptime_kuma_puller",
