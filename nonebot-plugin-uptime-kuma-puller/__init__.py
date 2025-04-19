@@ -1,17 +1,18 @@
-from nonebot import require
-require("nonebot_plugin_apscheduler")
+#from nonebot import require
+#require("nonebot_plugin_apscheduler")
 from nonebot.plugin import on_command
 from datetime import datetime
-import requests
+import aiohttp
+from nonebot.plugin import PluginMetadata
 
 
 __version__ = "0.0.1"
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_uptime_kuma_puller",
-    description="This is a plugin that can generate a UptimeKuma status page summary for you Nonebot",
+    description="This is a plugin that can generate a UptimeKuma status page summary for your Nonebot",
     type='application',
-    usage="This is a plugin that can generate a UptimeKuma status page summary for you Nonebot",
+    usage="This is a plugin that can generate a UptimeKuma status page summary for your Nonebot",
     homepage=(
         "https://github.com/bananaxiao2333/nonebot-plugin-uptime-kuma-puller"
     ),
@@ -22,43 +23,43 @@ __plugin_meta__ = PluginMetadata(
 
 
 
-ou_q = on_command("健康",aliases={"uptime"})
+ou_q = on_command("健康", aliases={"uptime"})
 
 query_url = "https://uptime.ooooo.ink"
 # TODO: setup via env
 proj_name = "orange"
 
-main_api = "{}/api/status-page/{}".format(query_url, proj_name)
-heartbeat_api = "{}/api/status-page/heartbeat/{}".format(query_url, proj_name)
+main_api = f"{query_url}/api/status-page/{proj_name}"
+heartbeat_api = f"{query_url}/api/status-page/heartbeat/{proj_name}"
 
 def takeSecond(elem):
     return elem[1]
 
-def OrangeUptimeQuery():
-    ret = "————OrangeUptime·健康查询————\n"
-    req = requests.get(main_api)
-    req_heartbeat = requests.get(heartbeat_api)
-    if req.status_code != 200:
-        ret += "OrangeUptime主要接口查询失败：Http error {}".format(req.status_code)
-        return ret
-    if req_heartbeat.status_code != 200:
-        ret += "OrangeUptime心跳接口查询失败：Http error {}".format(req.status_code)
-        return ret
-    content_js = req.json()
-    heartbeat_content_js = req_heartbeat.json()
-    #print(content_js)
+async def OrangeUptimeQuery():
+    ret = ""
+    async with aiohttp.ClientSession() as session:
+        async with session.get(main_api) as response:
+            if response.status != 200:
+                msg += f"OrangeUptime主要接口查询失败：Http error {response.status}"
+                return msg
+            content_js = await response.json()
+
+        async with session.get(heartbeat_api) as response:
+            if response.status != 200:
+                msg += f"OrangeUptime心跳接口查询失败：Http error {response.status}"
+                return msg
+            heartbeat_content_js = await response.json()
 
     # 获取监控项名称列表
     pub_list = content_js["publicGroupList"]
     pub_list_ids = []
-    for pub_gourp in pub_list:
-        for pub_sbj in pub_gourp["monitorList"]:
+    for pub_group in pub_list:
+        for pub_sbj in pub_group["monitorList"]:
             tag = ""
-            if pub_sbj["tags"] != []:
-                tag = "[{}]".format(pub_sbj["tags"][0]["name"])
-            pub_sbj_name = "{}{}".format(tag, pub_sbj["name"])
+            if pub_sbj["tags"]:
+                tag = f"[{pub_sbj['tags'][0]['name']}]"
+            pub_sbj_name = f"{tag}{pub_sbj['name']}"
             pub_list_ids.append([pub_sbj["id"], pub_sbj_name])
-    #print(pub_list_ids)
 
     # 查询每个监控项的情况
     heartbeat_list = heartbeat_content_js["heartbeatList"]
@@ -69,34 +70,29 @@ def OrangeUptimeQuery():
             status = "🟢"
         else:
             status = "🔴"
-        if heartbeat_sbj["ping"] == None:
-            ping = ""
-        else:
-            ping = " {}ms".format(heartbeat_sbj["ping"])
-        temp_txt = "{}{}".format(status, ping)
+        ping = f" {heartbeat_sbj['ping']}ms" if heartbeat_sbj["ping"] is not None else ""
+        temp_txt = f"{status}{ping}"
         pub_list_ids[i].append(temp_txt)
-    #print(pub_list_ids)
 
     # 获取公告
     temp_txt = ""
     incident = content_js["incident"]
-    if incident != None:
+    if incident is not None:
         style = str(incident["style"]).upper()
         title = str(incident["title"])
         content = str(incident["content"])
         u_time = str(incident["lastUpdatedDate"])
-        temp_txt = """————\n📣【{}】{}\n{}\n🕰本通知更新于{}\n————""".format(style, title, content, u_time)
-        #print(temp_txt)
-    
+        temp_txt = f"""————\n📣【{style}】{title}\n{content}\n🕰本通知更新于{u_time}\n————"""
+
     pub_list_ids.sort(key=takeSecond)
     for pub_sbj in pub_list_ids:
-        ret += "{} {}\n".format(pub_sbj[1], pub_sbj[2])
+        ret += f"{pub_sbj[1]} {pub_sbj[2]}\n"
     ret += temp_txt
-    
-    ret += f"\n——{datetime.now()}——"
-    return ret
+
+    msg += f"**查询结果**\n{ret}\n*******"
+    return msg
 
 @ou_q.handle()
 async def handle_function():
-    #await asyncio.sleep(15)
-    await ou_q.finish(OrangeUptimeQuery())
+    result = await OrangeUptimeQuery()
+    await ou_q.finish(result)
