@@ -29,7 +29,7 @@ __plugin_meta__ = PluginMetadata(
 
 query_uptime_kuma = on_command("健康", aliases={"uptime"})
 
-query_url = "https://uptime.ooooo.ink"
+query_url = "https://your.ip"
 # TODO: setup via env
 proj_name_list = ["orange","starcraft","fse"]
 
