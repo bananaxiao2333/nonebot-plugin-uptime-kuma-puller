@@ -21,7 +21,6 @@ license = "MIT"
 
 dependencies = [
     "aiohttp~=3.11",
-    "nonebot-adapter-onebot~=2.4",
     "nonebot2~=2.3"
 ]
 
