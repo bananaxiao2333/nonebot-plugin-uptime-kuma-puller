@@ -46,20 +46,6 @@ _✨ NoneBot UptimeKuma 抓取 ✨_
 
     pip install nonebot-plugin-uptime-kuma-puller
 </details>
-<details>
-<summary>pdm</summary>
-
-    pdm add nonebot-plugin-uptime-kuma-puller
-</details>
-<details>
-<summary>poetry</summary>
-
-    poetry add nonebot-plugin-uptime-kuma-puller
-</details>
-<details>
-<summary>conda</summary>
-
-    conda install nonebot-plugin-uptime-kuma-puller
 </details>
 
 打开 nonebot2 项目根目录下的 `pyproject.toml` 文件, 在 `[tool.nonebot]` 部分追加写入
