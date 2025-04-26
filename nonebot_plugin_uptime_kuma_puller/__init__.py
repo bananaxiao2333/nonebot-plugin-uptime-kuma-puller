@@ -41,7 +41,7 @@ logger.info(
 def takeSecond(elem):
     return elem[1]
 
-async def OrangeUptimeQuery(proj_name):
+async def Query(proj_name):
     try:
         main_api = f"{plugin_config.query_url}/api/status-page/{proj_name}"
         heartbeat_api = f"{plugin_config.query_url}/api/status-page/heartbeat/{proj_name}"
@@ -150,10 +150,10 @@ async def handle_function(matcher: Matcher, args: Message = CommandArg()):
     if args.extract_plain_text():
         proj_name = args.extract_plain_text().lower()
         if proj_name in plugin_config.proj_name_list:
-            result = await OrangeUptimeQuery(proj_name)
+            result = await Query(proj_name)
             await query_uptime_kuma.finish(result)
     proj_name = await suggest(f"{plugin_config.suggest_proj_prompt}", plugin_config.proj_name_list, retry=plugin_config.retry, timeout=plugin_config.timeout)
     if proj_name is None:
         await query_uptime_kuma.finish(f"{plugin_config.no_arg_prompt}")
-    result = await OrangeUptimeQuery(proj_name)
+    result = await Query(proj_name)
     await query_uptime_kuma.finish(result)
