@@ -1,6 +1,6 @@
 [project]
 name = "nonebot_plugin_uptime_kuma_puller"
-version = "0.0.2"
+version = "0.1.0"
 description = "This is a plugin that can generate a UptimeKuma status page summary for your Nonebot"
 authors = [
   { name = "HTony03", email = "HTony03@foxmail.com" },
@@ -21,7 +21,8 @@ license = "MIT"
 
 dependencies = [
     "aiohttp~=3.11",
-    "nonebot2~=2.3"
+    "nonebot2~=2.3",
+    "nonebot-plugin-waiter~=0.8.1",
 ]
 
 [project.urls]
