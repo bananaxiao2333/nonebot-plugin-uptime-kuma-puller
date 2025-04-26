@@ -1,5 +1,4 @@
 from nonebot import require
-require("nonebot_plugin_alconna")
 require("nonebot_plugin_waiter")
 from nonebot.plugin import on_command
 from datetime import datetime
@@ -10,12 +9,13 @@ from nonebot.params import ArgPlainText
 from nonebot.adapters import Message
 from nonebot.params import CommandArg
 from nonebot_plugin_waiter import suggest
+from nonebot.log import logger
 from string import Template
 
 from nonebot import get_plugin_config
 from .config import Config
 
-__version__ = "0.0.3"
+__version__ = "0.1.1"
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_uptime_kuma_puller",
@@ -25,7 +25,7 @@ __plugin_meta__ = PluginMetadata(
     homepage=(
         "https://github.com/bananaxiao2333/nonebot-plugin-uptime-kuma-puller"
     ),
-    config=None,
+    config=Config,
     supported_adapters={"~onebot.v11"},
     extra={},
 )
@@ -34,8 +34,9 @@ plugin_config = get_plugin_config(Config).ukp
 
 query_uptime_kuma = on_command("健康", aliases={"uptime", "ukp"})
 
-#query_url = "https://uptime.ooooo.ink"
-#proj_name_list = ["orange","starcraft","fse"]
+logger.info(
+    f"Initializing nonebot_plugin_uptime_kuma_puller version: {__version__}"
+)
 
 def takeSecond(elem):
     return elem[1]
