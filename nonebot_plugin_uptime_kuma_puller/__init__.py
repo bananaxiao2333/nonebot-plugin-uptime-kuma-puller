@@ -15,7 +15,7 @@ from string import Template
 from nonebot import get_plugin_config
 from .config import Config
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_uptime_kuma_puller",
@@ -63,7 +63,7 @@ async def Query(proj_name):
 
         proj_title = content_js["config"]["title"]
 
-        # 获取监控项名称列表
+        # 获取监控项名称列表pre
         pub_list = content_js["publicGroupList"]
         pub_list_ids = []
         for pub_group in pub_list:
@@ -76,16 +76,22 @@ async def Query(proj_name):
                 pub_sbj_name = f"{tag}{pub_sbj['name']}"
                 pub_list_ids.append([pub_sbj["id"], pub_sbj_name])
 
-        # 查询每个监控项的情况
+        # 查询每个监控项的情况pre
         heartbeat_list = heartbeat_content_js["heartbeatList"]
         for i in range(len(pub_list_ids)):
             pub_sbj = pub_list_ids[i]
             heartbeat_sbj = heartbeat_list[str(pub_sbj[0])][-1]
             # 显示在线状况
-            if heartbeat_sbj["status"] == 1:
+            if heartbeat_sbj["status"] == 1: # 在线状态
                 status = f"{plugin_config.up_status}"
-            else:
+            elif heartbeat_sbj["status"] == 0: # 离线状态
                 status = f"{plugin_config.down_status}"
+            elif heartbeat_sbj["status"] == 2: # 重试中状态
+                status = f"{plugin_config.pending_status}"
+            elif heartbeat_sbj["status"] == 3: # 维护中状态
+                status = f"{plugin_config.maintenance_status}"
+            else:
+                status = f"{plugin_config.unknown_status}"
             # 显示数字ping
             ping = f" {heartbeat_sbj['ping']}ms" if heartbeat_sbj["ping"] is not None and plugin_config.show_ping else ""
             temp_txt = f"{status}{ping}"
@@ -127,17 +133,52 @@ async def Query(proj_name):
                 }
                 incident_msg = incident_template.safe_substitute(incident_template_mapping)
             
-        # 对监控项进行排序
+        # 排序并生成监控项部分
+        proj_msg = ""
         pub_list_ids.sort(key=takeSecond)
-        for pub_sbj in pub_list_ids:
-            ret += f"{pub_sbj[1]} {pub_sbj[2]}\n"
-        # 塞入公告
-        ret += incident_msg
+        for index, pub_sbj in enumerate(pub_list_ids):
+            proj_msg += f"{pub_sbj[1]} {pub_sbj[2]}"
+            if index != len(pub_list_ids) - 1:
+                proj_msg += "\n"
+        
+        # 处理维护消息
+        maintenance_list = []
+        if plugin_config.show_maintenance:
+            maintenance = content_js["maintenanceList"]
+            if maintenance is not None:
+                maintenance_msg = ""
+                maintenance_msg_template = Template(plugin_config.maintenance_template)
+                for index, value in enumerate(maintenance):
+                    maintenance_msg_time = ""
+                    maintenance_strategy_transed = value["strategy"]
+                    if value["strategy"] in plugin_config.maintenance_time_template_list: # 注入维护时间区间
+                        maintenance_msg_time_template = Template(plugin_config.maintenance_time_template_list[value["strategy"]])
+                        maintenance_msg_time_mapping = {
+                            "cron": value["cron"],
+                            "duration": value["duration"],
+                            "interval_day": value["intervalDay"],
+                            "timezone": value["timezone"],
+                            "timezone_offset": value["timezoneOffset"]
+                        }
+                        maintenance_msg_time = maintenance_msg_time_template.safe_substitute(maintenance_msg_time_mapping)
+                    if value["strategy"] in plugin_config.maintenance_strategy_trans:
+                        maintenance_strategy_transed = plugin_config.maintenance_strategy_trans[value["strategy"]]
+                    maintenance_msg_mapping = { # 注入维护消息总成
+                        "id": value["id"],
+                        "title": value["title"],
+                        "description": value["description"],
+                        "strategy": maintenance_strategy_transed,
+                        "maintenance_time": maintenance_msg_time
+                    }
+                    maintenance_msg += "\n" + maintenance_msg_template.safe_substitute(maintenance_msg_mapping)
+        
         # 格式最后输出
         msg_template = Template(plugin_config.query_template)
         msg_template_mapping = {
             "title":proj_title,
-            "main":ret,
+            "proj_msg":proj_msg,
+            "incident_msg":incident_msg,
+            "maintenance_msg":maintenance_msg,
             "time":datetime.now()
         }
         msg = msg_template.safe_substitute(msg_template_mapping)
