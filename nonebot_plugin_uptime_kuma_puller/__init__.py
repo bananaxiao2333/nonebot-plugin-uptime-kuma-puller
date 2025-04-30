@@ -26,7 +26,7 @@ __plugin_meta__ = PluginMetadata(
         "https://github.com/bananaxiao2333/nonebot-plugin-uptime-kuma-puller"
     ),
     config=Config,
-    supported_adapters={},
+    supported_adapters={set[str] | None},
     extra={},
 )
 
