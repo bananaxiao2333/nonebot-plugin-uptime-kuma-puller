@@ -10,6 +10,7 @@
 
 _✨ NoneBot UptimeKuma 抓取 ✨_
 
+> 本插件正在持续开发中，如有问题请发Issue
 
 <a href="./LICENSE">
     <img src="https://img.shields.io/github/license/bananaxiao2333/nonebot-plugin-uptime-kuma-puller.svg" alt="license">
@@ -62,10 +63,7 @@ _✨ NoneBot UptimeKuma 抓取 ✨_
 |:----:|:----:|:----:|:----:|
 | upk__query_url | 是 | 无 | UptimeKuma 地址 |
 | upk__proj_name_list | 是 | 无 | 需要监控的项目名称列表（需与 UptimeKuma 项目名称完全匹配） |
-| upk__up_status | 否 | 🟢 | 在线状态标识 |
-| upk__down_status | 否 | 🔴 | 离线状态标识 |
-| upk__maintenance_status | 否 | 🔵 | 维护状态标识 |
-| upk__unknown_status | 否 | ❓ | 未知状态标识（当出现未适配的状态时，如果发现请立刻提交issue） |
+| upk__status_mapping | 否 | {0 : "🔴",1 : "🟢",2 : "🟡",3 : "🔵","unknow" : "❓"} | 状态标识 |
 | upk__show_ping | 否 | True | 是否在结果中显示 Ping 测试结果 |
 | upk__show_incident | 否 | True | 是否在结果中显示公告信息 |
 | upk__error_prompt | 否 | 查询过程中发生错误，查询终止！ | 当发生致命错误时返回的提示信息（后附带错误信息） |
@@ -81,9 +79,11 @@ _✨ NoneBot UptimeKuma 抓取 ✨_
 | upk__incident_type_trans | 否 | `{"info":"信息","primary":"重要","danger":"危险"}` | 事故类型映射表，用于将英文类型关键词转换为中文描述 |
 | upk__maintenance_strategy_trans | 否 | `{"single":"单一时间窗口","manual":"手动","cron":"命令调度"}` | 维护策略类型映射表，用于将英文类型关键词转换为中文描述 |
 | upk__maintenance_time_template_list | 否 | `{"cron":"\n⊢${cron} 周期${duration}分钟（每${interval_day}天一次）\n⊢时区 ${timezone} ${timezone_offset}"}` | 维护策略描述模板映射表，支持变量替换 |
-| upk__query_template | 否 | `***${title}***\n${main}\n******` | 查询结果模板，支持变量替换 |
+| upk__query_template | 否 | `***${title}***\n统计：${status_statistics_msg}\n${ping_statistics_msg}\n------${maintenance_msg}\n------\n${proj_msg}\n${incident_msg}\n******消耗时间${took_time}ms` | 查询结果模板，支持变量替换 |
 | upk__maintenance_template | 否 | `⚠️🔵ID${id} ${title}（${strategy}）\n⊢${description}${maintenance_time}` | 否 | 维护消息模板 |
 | upk__incident_template | 否 | `————\n📣${incident_style}${title}\n${content}${incident_update_time_ret}\n————` | 公告信息模板，支持变量替换 |
+| upk__status_statistics_template | 否 | `${icon}:${number} ` | 状态统计模板，支持变量替换 |
+| upk__ping_statistics_template | 否 | `最大${max}ms 最小${min}ms 平均${argv}ms` | PING统计模板，支持变量替换 |
 
 ## 🎉 使用
 ### 指令表

@@ -2,11 +2,13 @@ from pydantic import BaseModel
 class ScopedConfig(BaseModel):
     query_url: str
     proj_name_list: list
-    up_status: str = "🟢"
-    down_status: str = "🔴"
-    pending_status: str = "🟡"
-    maintenance_status: str = "🔵"
-    unknown_status: str = "❓"
+    status_mapping: dict = {
+        0 : "🔴",
+        1 : "🟢",
+        2 : "🟡",
+        3 : "🔵",
+        "unknow" : "❓"
+    }
     show_ping: bool = True
     show_incident: bool = True
     show_maintenance: bool = True
@@ -32,9 +34,11 @@ class ScopedConfig(BaseModel):
     maintenance_time_template_list: dict = {
         "cron":"\n⊢${cron} 周期${duration}分钟（每${interval_day}天一次）\n⊢时区 ${timezone} ${timezone_offset}"
     }
-    query_template: str = "***${title}***${maintenance_msg}\n${proj_msg}\n${incident_msg}\n******"
+    query_template: str = "***${title}***\n统计：${status_statistics_msg}\n${ping_statistics_msg}\n------${maintenance_msg}\n------\n${proj_msg}\n${incident_msg}\n******消耗时间${took_time}ms"
     maintenance_template: str = "⚠️🔵ID${id} ${title}（${strategy}）\n⊢${description}${maintenance_time}"
     incident_template: str = "————\n📣${incident_style}${title}\n${content}${incident_update_time_ret}\n————"
+    status_statistics_template: str = "${icon}:${number} "
+    ping_statistics_template: str = "最大${max}ms 最小${min}ms 平均${argv}ms"
 
 class Config(BaseModel):
     ukp: ScopedConfig

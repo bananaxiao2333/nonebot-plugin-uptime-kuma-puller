@@ -2,6 +2,7 @@ from nonebot import require
 require("nonebot_plugin_waiter")
 from nonebot.plugin import on_command
 from datetime import datetime
+import time
 import aiohttp
 from nonebot.plugin import PluginMetadata
 from nonebot.matcher import Matcher
@@ -15,7 +16,7 @@ from string import Template
 from nonebot import get_plugin_config
 from .config import Config
 
-__version__ = "0.1.5"
+__version__ = "0.2.0"
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_uptime_kuma_puller",
@@ -43,10 +44,12 @@ def takeSecond(elem):
 
 async def Query(proj_name):
     try:
+        start_time = time.time() # 开始计时
         main_api = f"{plugin_config.query_url}/api/status-page/{proj_name}"
         heartbeat_api = f"{plugin_config.query_url}/api/status-page/heartbeat/{proj_name}"
         ret = ""
         msg = ""
+        status_statistics = {}
         
         async with aiohttp.ClientSession() as session:
             async with session.get(main_api) as response:
@@ -78,24 +81,38 @@ async def Query(proj_name):
 
         # 查询每个监控项的情况pre
         heartbeat_list = heartbeat_content_js["heartbeatList"]
+        ping_statistics_total_ping = 0
+        ping_statistics_num = 0
+        ping_statistics_max = 0
+        ping_statistics_min_flag = False
+        ping_statistics_min = 0
+        ping_statistics_arvg = 0
         for i in range(len(pub_list_ids)):
             pub_sbj = pub_list_ids[i]
             heartbeat_sbj = heartbeat_list[str(pub_sbj[0])][-1]
             # 显示在线状况
-            if heartbeat_sbj["status"] == 1: # 在线状态
-                status = f"{plugin_config.up_status}"
-            elif heartbeat_sbj["status"] == 0: # 离线状态
-                status = f"{plugin_config.down_status}"
-            elif heartbeat_sbj["status"] == 2: # 重试中状态
-                status = f"{plugin_config.pending_status}"
-            elif heartbeat_sbj["status"] == 3: # 维护中状态
-                status = f"{plugin_config.maintenance_status}"
+            if heartbeat_sbj["status"] in plugin_config.status_mapping: # 检查状态
+                status = plugin_config.status_mapping[heartbeat_sbj["status"]]
             else:
-                status = f"{plugin_config.unknown_status}"
+                status = plugin_config.status_mapping["unknow"]
+            if heartbeat_sbj["status"] in status_statistics: # 进行项目统计
+                status_statistics[heartbeat_sbj["status"]] = status_statistics[heartbeat_sbj["status"]] + 1
+            else:
+                status_statistics[heartbeat_sbj["status"]] = 1
             # 显示数字ping
-            ping = f" {heartbeat_sbj['ping']}ms" if heartbeat_sbj["ping"] is not None and plugin_config.show_ping else ""
+            ping_is_not_none = heartbeat_sbj["ping"] is not None
+            ping = f" {heartbeat_sbj['ping']}ms" if ping_is_not_none and plugin_config.show_ping else ""
+            if ping_is_not_none:
+                ping_statistics_total_ping += heartbeat_sbj['ping']
+                ping_statistics_num += 1
+                ping_statistics_max = heartbeat_sbj['ping'] if heartbeat_sbj['ping'] > ping_statistics_max else ping_statistics_max
+                ping_statistics_min = heartbeat_sbj['ping'] if heartbeat_sbj['ping'] < ping_statistics_min else ping_statistics_min
+                if not ping_statistics_min_flag: # 如果min值并未初始化
+                    ping_statistics_min = heartbeat_sbj['ping']
+                    ping_statistics_min_flag = True
             temp_txt = f"{status}{ping}"
             pub_list_ids[i].append(temp_txt)
+        ping_statistics_arvg = round(ping_statistics_total_ping / ping_statistics_num if ping_statistics_num != 0 else 0, 1)
 
         # 获取公告
         incident_msg = ""
@@ -172,6 +189,28 @@ async def Query(proj_name):
                     }
                     maintenance_msg += "\n" + maintenance_msg_template.safe_substitute(maintenance_msg_mapping)
         
+        # 处理统计信息
+        status_statistics_msg = ""
+        for key, value in status_statistics.items():
+            icon = plugin_config.status_mapping[key] # 获取图标
+            status_statistics_msg_template = Template(plugin_config.status_statistics_template)
+            status_statistics_msg_template_mapping = {
+                "icon" : icon,
+                "number" : status_statistics[key]
+            }
+            status_statistics_temp = status_statistics_msg_template.safe_substitute(status_statistics_msg_template_mapping)
+            status_statistics_msg += status_statistics_temp
+        #status_statistics_msg += str(status_statistics)
+        ping_statistics_template = Template(plugin_config.ping_statistics_template)
+        ping_statistics_template_mapping = {
+            "argv" : ping_statistics_arvg,
+            "max" : ping_statistics_max,
+            "min" : ping_statistics_min
+        }
+        ping_statistics_msg = ping_statistics_template.safe_substitute(ping_statistics_template_mapping)
+
+        end_time = time.time() #结束计时
+        took_time = round(((end_time - start_time)*1000), 1)
         # 格式最后输出
         msg_template = Template(plugin_config.query_template)
         msg_template_mapping = {
@@ -179,11 +218,15 @@ async def Query(proj_name):
             "proj_msg":proj_msg,
             "incident_msg":incident_msg,
             "maintenance_msg":maintenance_msg,
+            "status_statistics_msg":status_statistics_msg,
+            "ping_statistics_msg":ping_statistics_msg,
+            "took_time":took_time,
             "time":datetime.now()
         }
         msg = msg_template.safe_substitute(msg_template_mapping)
     except Exception as e:
         msg = f"{plugin_config.error_prompt}\n{e}"
+        raise e
     return msg
 
 @query_uptime_kuma.handle()
