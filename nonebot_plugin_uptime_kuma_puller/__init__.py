@@ -16,7 +16,7 @@ from string import Template
 from nonebot import get_plugin_config
 from .config import Config
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_uptime_kuma_puller",
@@ -27,7 +27,7 @@ __plugin_meta__ = PluginMetadata(
         "https://github.com/bananaxiao2333/nonebot-plugin-uptime-kuma-puller"
     ),
     config=Config,
-    supported_adapters={None},
+    supported_adapters=None,
     extra={},
 )
 
