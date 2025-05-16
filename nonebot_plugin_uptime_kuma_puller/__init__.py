@@ -1,10 +1,17 @@
 from nonebot import require
 require("nonebot_plugin_waiter")
+require("nonebot_plugin_alconna")
+require("nonebot_plugin_group_config")
 from nonebot.plugin import on_command
 from datetime import datetime
 import time
 import aiohttp
 from nonebot.plugin import PluginMetadata
+from nonebot import Config as nb_config
+from nonebot_plugin_alconna import At, Image, on_alconna, Field
+from arclet.alconna import Args, Option, Alconna, Subcommand, store_true, CommandMeta, Arparma, count
+from nonebot.adapters import Event
+from nonebot.adapters import Bot
 from nonebot.matcher import Matcher
 from nonebot.params import ArgPlainText
 from nonebot.adapters import Message
@@ -16,7 +23,7 @@ from string import Template
 from nonebot import get_plugin_config
 from .config import Config
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_uptime_kuma_puller",
@@ -31,18 +38,36 @@ __plugin_meta__ = PluginMetadata(
     extra={},
 )
 
-plugin_config = get_plugin_config(Config).ukp
-
-query_uptime_kuma = on_command("健康", aliases={"uptime", "ukp"})
-
 logger.info(
     f"Initializing nonebot_plugin_uptime_kuma_puller version: {__version__}"
 )
 
+plugin_config = get_plugin_config(Config).ukp
+nb_config = get_plugin_config(nb_config)
+
+#query_uptime_kuma = Alconna("健康", aliases={"uptime", "ukp"})
+query_uptime_kuma_alc = Alconna(
+    "uptime",
+    Subcommand(
+        "check",
+        Option("-n|--name", Args["name", str, Field(completion=lambda: "请输入项目名称"),], help_text="项目名称"),
+        Option("-t|--time", action=count, default=0, help_text="是否显示查询用时"),
+        help_text="检查指定项目状态"
+    ),
+    Option("list", help_text="列出可查询项目"),
+    meta = CommandMeta(
+        fuzzy_match=True,
+        description="检查项目列表各状态",
+        author="bananaxiao2333"
+    ),
+)
+query_uptime_kuma = on_alconna(query_uptime_kuma_alc, auto_send_output=True, use_cmd_start = True, comp_config={"lite": True}, skip_for_unmatch=False, aliases = {"健康", "ukp"})
+
+
 def takeSecond(elem):
     return elem[1]
 
-async def Query(proj_name):
+async def Query(proj_name, show_time):
     try:
         start_time = time.time() # 开始计时
         main_api = f"{plugin_config.query_url}/api/status-page/{proj_name}"
@@ -73,7 +98,7 @@ async def Query(proj_name):
             for pub_sbj in pub_group["monitorList"]:
                 tag = ""
                 if "tags" in pub_sbj and plugin_config.show_tags:
-                    print(pub_sbj)
+                    #print(pub_sbj)
                     if pub_sbj["tags"] != []:
                         tag = f"[{pub_sbj['tags'][0]['name']}]"
                 pub_sbj_name = f"{tag}{pub_sbj['name']}"
@@ -210,7 +235,9 @@ async def Query(proj_name):
         ping_statistics_msg = ping_statistics_template.safe_substitute(ping_statistics_template_mapping)
 
         end_time = time.time() #结束计时
-        took_time = round(((end_time - start_time)*1000), 1)
+        took_time = f"消耗时间{round(((end_time - start_time)*1000), 1)}ms"
+        if not show_time:
+            took_time = ""
         # 格式最后输出
         msg_template = Template(plugin_config.query_template)
         msg_template_mapping = {
@@ -230,14 +257,27 @@ async def Query(proj_name):
     return msg
 
 @query_uptime_kuma.handle()
-async def handle_function(matcher: Matcher, args: Message = CommandArg()):
-    if args.extract_plain_text():
-        proj_name = args.extract_plain_text().lower()
-        if proj_name in plugin_config.proj_name_list:
-            result = await Query(proj_name)
-            await query_uptime_kuma.finish(result)
-    proj_name = await suggest(f"{plugin_config.suggest_proj_prompt}", plugin_config.proj_name_list, retry=plugin_config.retry, timeout=plugin_config.timeout)
-    if proj_name is None:
-        await query_uptime_kuma.finish(f"{plugin_config.no_arg_prompt}")
-    result = await Query(proj_name)
-    await query_uptime_kuma.finish(result)
+async def _(matcher: Matcher,event: Event,args: Arparma):
+    result = ""
+    if args.find("check"):
+        if args.name:
+            proj_name = args.name.lower()
+            if proj_name in plugin_config.proj_name_list:
+                result = await Query(proj_name, show_time=bool(args.query("check.time.value")))
+                await query_uptime_kuma.finish(result)
+        """
+        proj_name = await suggest(f"{plugin_config.suggest_proj_prompt}", plugin_config.proj_name_list, retry=plugin_config.retry, timeout=plugin_config.timeout)
+        if proj_name is None:
+            await query_uptime_kuma.finish(f"{plugin_config.no_arg_prompt}")
+        result = await Query(proj_name)
+        await query_uptime_kuma.finish(result)
+        """
+    if args.find("list"):
+        result = Template(plugin_config.ava_template).safe_substitute({
+            "list" : plugin_config.proj_name_list
+        })
+        await query_uptime_kuma.finish(result)
+
+logger.info(
+    f"The nonebot_plugin_uptime_kuma_puller initialization has been completed. If no error is seen, it indicates that the initialization was successful"
+)

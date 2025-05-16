@@ -16,7 +16,7 @@ _✨ NoneBot UptimeKuma 抓取 ✨_
     <img src="https://img.shields.io/github/license/bananaxiao2333/nonebot-plugin-uptime-kuma-puller.svg" alt="license">
 </a>
 <a href="https://pypi.python.org/pypi/nonebot-plugin-uptime-kuma-puller">
-    <img src="https://img.shields.io/pypi/format/nonebot-plugin-uptime-kuma-puller" alt="pypi">
+    <img src="https://img.shields.io/pypi/v/nonebot-plugin-uptime-kuma-puller.svg" alt="pypi">
 </a>
 <img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="python">
 
@@ -75,15 +75,16 @@ _✨ NoneBot UptimeKuma 抓取 ✨_
 | upk__show_tags | 否 | True | 是否在结果中显示标签信息 |
 | upk__show_maintenance | 否 | 是否显示维护信息 |
 | upk__timeout | 否 | 30 | 超时时间（单位：秒） |
-| upk__retry | 否 | 2 | 询问参数失败时的重试次数 |
+| upk__retry | 否 | 0 | 询问参数失败时的重试次数 |
 | upk__incident_type_trans | 否 | `{"info":"信息","primary":"重要","danger":"危险"}` | 事故类型映射表，用于将英文类型关键词转换为中文描述 |
 | upk__maintenance_strategy_trans | 否 | `{"single":"单一时间窗口","manual":"手动","cron":"命令调度"}` | 维护策略类型映射表，用于将英文类型关键词转换为中文描述 |
 | upk__maintenance_time_template_list | 否 | `{"cron":"\n⊢${cron} 周期${duration}分钟（每${interval_day}天一次）\n⊢时区 ${timezone} ${timezone_offset}"}` | 维护策略描述模板映射表，支持变量替换 |
-| upk__query_template | 否 | `***${title}***\n统计：${status_statistics_msg}\n${ping_statistics_msg}\n------${maintenance_msg}\n------\n${proj_msg}\n${incident_msg}\n******消耗时间${took_time}ms` | 查询结果模板，支持变量替换 |
+| upk__query_template | 否 | `***${title}***\n统计：${status_statistics_msg}\n${ping_statistics_msg}\n------${maintenance_msg}\n------\n${proj_msg}\n${incident_msg}\n******${took_time}` | 查询结果模板，支持变量替换 |
 | upk__maintenance_template | 否 | `⚠️🔵ID${id} ${title}（${strategy}）\n⊢${description}${maintenance_time}` | 否 | 维护消息模板 |
 | upk__incident_template | 否 | `————\n📣${incident_style}${title}\n${content}${incident_update_time_ret}\n————` | 公告信息模板，支持变量替换 |
 | upk__status_statistics_template | 否 | `${icon}:${number} ` | 状态统计模板，支持变量替换 |
 | upk__ping_statistics_template | 否 | `最大${max}ms 最小${min}ms 平均${argv}ms` | PING统计模板，支持变量替换 |
+| upk__ava_template | 否 | `目前支持查询项目的有：${list}` | 可用项查询模版，支持变量 |
 
 ## 🎉 使用
 ### 指令表

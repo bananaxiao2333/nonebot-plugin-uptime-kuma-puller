@@ -20,7 +20,7 @@ class ScopedConfig(BaseModel):
     show_incident_type: bool = True
     show_tags: bool = True
     timeout: int = 30
-    retry: int = 2
+    retry: int = 0
     incident_type_trans: dict = {
         "info":"信息",
         "primary":"重要",
@@ -34,11 +34,12 @@ class ScopedConfig(BaseModel):
     maintenance_time_template_list: dict = {
         "cron":"\n⊢${cron} 周期${duration}分钟（每${interval_day}天一次）\n⊢时区 ${timezone} ${timezone_offset}"
     }
-    query_template: str = "***${title}***\n统计：${status_statistics_msg}\n${ping_statistics_msg}\n------${maintenance_msg}\n------\n${proj_msg}\n${incident_msg}\n******消耗时间${took_time}ms"
+    query_template: str = "***${title}***\n统计：${status_statistics_msg}\n${ping_statistics_msg}\n------${maintenance_msg}\n------\n${proj_msg}\n${incident_msg}\n******${took_time}"
     maintenance_template: str = "⚠️🔵ID${id} ${title}（${strategy}）\n⊢${description}${maintenance_time}"
     incident_template: str = "————\n📣${incident_style}${title}\n${content}${incident_update_time_ret}\n————"
     status_statistics_template: str = "${icon}:${number} "
     ping_statistics_template: str = "最大${max}ms 最小${min}ms 平均${argv}ms"
+    ava_template: str = "目前支持查询项目的有：${list}"
 
 class Config(BaseModel):
     ukp: ScopedConfig
