@@ -23,7 +23,7 @@ dependencies = [
     "aiohttp~=3.11",
     "nonebot2~=2.3",
     "nonebot-plugin-waiter~=0.8.1",
-    "nonebot-plugin-alconna~=0.57.6",
+    "nonebot-plugin-alconna>=0.57.6,<0.59.0",
     "nonebot-plugin-group-config~=0.2.5",
 ]
 
