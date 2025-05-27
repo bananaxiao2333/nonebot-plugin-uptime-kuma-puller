@@ -7,7 +7,6 @@ from datetime import datetime
 import time
 import aiohttp
 from nonebot.plugin import PluginMetadata
-from nonebot import Config as nb_config
 from nonebot_plugin_alconna import At, Image, on_alconna, Field
 from nonebot_plugin_group_config import GroupConfig, GetGroupConfig
 from arclet.alconna import Args, Option, Alconna, Subcommand, store_true, CommandMeta, Arparma, count
@@ -52,7 +51,7 @@ class SupportAdapterModule(str, Enum):
     tail_chat = "nonebot_adapter_tailchat"
     wxmp = "nonebot.adapters.wxmp"
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_uptime_kuma_puller",
@@ -72,7 +71,6 @@ logger.info(
 )
 
 plugin_config = get_plugin_config(Config).ukp
-nb_config = get_plugin_config(nb_config)
 
 #query_uptime_kuma = Alconna("健康", aliases={"uptime", "ukp"})
 query_uptime_kuma_alc = Alconna(
