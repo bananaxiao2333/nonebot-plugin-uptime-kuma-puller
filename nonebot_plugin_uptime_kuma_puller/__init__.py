@@ -9,6 +9,7 @@ import aiohttp
 from nonebot.plugin import PluginMetadata
 from nonebot import Config as nb_config
 from nonebot_plugin_alconna import At, Image, on_alconna, Field
+from nonebot_plugin_group_config import GroupConfig, GetGroupConfig
 from arclet.alconna import Args, Option, Alconna, Subcommand, store_true, CommandMeta, Arparma, count
 from nonebot.adapters import Event
 from nonebot.adapters import Bot
@@ -23,7 +24,34 @@ from string import Template
 from nonebot import get_plugin_config
 from .config import Config
 
-__version__ = "0.2.2"
+class SupportAdapterModule(str, Enum):
+    """支持的适配器的模块路径"""
+
+    console = "nonebot.adapters.console"
+    ding = "nonebot.adapters.ding"
+    discord = "nonebot.adapters.discord"
+    dodo = "nonebot.adapters.dodo"
+    feishu = "nonebot.adapters.feishu"
+    gewechat = "nonebot.adapters.gewechat"
+    github = "nonebot.adapters.github"
+    heybox = "nonebot.adapters.heybox"
+    kritor = "nonebot.adapters.kritor"
+    kook = "nonebot.adapters.kaiheila"
+    mail = "nonebot.adapters.mail"
+    milky = "nonebot.adapters.milky"
+    minecraft = "nonebot.adapters.minecraft"
+    mirai = "nonebot.adapters.mirai"
+    ntchat = "nonebot.adapters.ntchat"
+    onebot11 = "nonebot.adapters.onebot.v11"
+    onebot12 = "nonebot.adapters.onebot.v12"
+    qq = "nonebot.adapters.qq"
+    red = "nonebot.adapters.red"
+    satori = "nonebot.adapters.satori"
+    telegram = "nonebot.adapters.telegram"
+    tail_chat = "nonebot_adapter_tailchat"
+    wxmp = "nonebot.adapters.wxmp"
+
+__version__ = "0.2.2-fix1"
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_uptime_kuma_puller",
@@ -34,7 +62,7 @@ __plugin_meta__ = PluginMetadata(
         "https://github.com/bananaxiao2333/nonebot-plugin-uptime-kuma-puller"
     ),
     config=Config,
-    supported_adapters=None,
+    supported_adapters=set(SupportAdapterModule.__members__.values()),
     extra={},
 )
 
@@ -49,12 +77,12 @@ nb_config = get_plugin_config(nb_config)
 query_uptime_kuma_alc = Alconna(
     "uptime",
     Subcommand(
-        "check",
-        Option("-n|--name", Args["name", str, Field(completion=lambda: "请输入项目名称"),], help_text="项目名称"),
-        Option("-t|--time", action=count, default=0, help_text="是否显示查询用时"),
+        "check|检查",
+        Option("-n|--name|--名字|--项目", Args["name", str, Field(completion=lambda: "请输入项目名称"),], help_text="项目名称"),
+        Option("-t|--time|--时间", action=count, default=0, help_text="是否显示查询用时"),
         help_text="检查指定项目状态"
     ),
-    Option("list", help_text="列出可查询项目"),
+    Option("list|列出", help_text="列出可查询项目"),
     meta = CommandMeta(
         fuzzy_match=True,
         description="检查项目列表各状态",
@@ -264,6 +292,9 @@ async def _(matcher: Matcher,event: Event,args: Arparma):
             proj_name = args.name.lower()
             if proj_name in plugin_config.proj_name_list:
                 result = await Query(proj_name, show_time=bool(args.query("check.time.value")))
+                await query_uptime_kuma.finish(result)
+            else:
+                result = f"可查询列表{plugin_config.proj_name_list}中不存在{proj_name}，请重试！"
                 await query_uptime_kuma.finish(result)
         """
         proj_name = await suggest(f"{plugin_config.suggest_proj_prompt}", plugin_config.proj_name_list, retry=plugin_config.retry, timeout=plugin_config.timeout)
