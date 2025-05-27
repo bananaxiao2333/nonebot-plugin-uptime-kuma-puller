@@ -20,6 +20,7 @@ from nonebot.params import CommandArg
 from nonebot_plugin_waiter import suggest
 from nonebot.log import logger
 from string import Template
+from enum import Enum
 
 from nonebot import get_plugin_config
 from .config import Config
@@ -51,7 +52,7 @@ class SupportAdapterModule(str, Enum):
     tail_chat = "nonebot_adapter_tailchat"
     wxmp = "nonebot.adapters.wxmp"
 
-__version__ = "0.2.2-fix1"
+__version__ = "0.2.2-fix2"
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_uptime_kuma_puller",
