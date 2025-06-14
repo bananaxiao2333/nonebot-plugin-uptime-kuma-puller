@@ -7,6 +7,7 @@ from datetime import datetime
 import time
 import aiohttp
 from nonebot.plugin import PluginMetadata
+from nonebot.plugin import inherit_supported_adapters
 from nonebot_plugin_alconna import At, Image, on_alconna, Field
 from nonebot_plugin_group_config import GroupConfig, GetGroupConfig
 from arclet.alconna import Args, Option, Alconna, Subcommand, store_true, CommandMeta, Arparma, count
@@ -24,32 +25,8 @@ from enum import Enum
 from nonebot import get_plugin_config
 from .config import Config
 
-class SupportAdapterModule(str, Enum):
-    """支持的适配器的模块路径"""
 
-    console = "nonebot.adapters.console"
-    ding = "nonebot.adapters.ding"
-    discord = "nonebot.adapters.discord"
-    dodo = "nonebot.adapters.dodo"
-    feishu = "nonebot.adapters.feishu"
-    gewechat = "nonebot.adapters.gewechat"
-    github = "nonebot.adapters.github"
-    heybox = "nonebot.adapters.heybox"
-    kritor = "nonebot.adapters.kritor"
-    kook = "nonebot.adapters.kaiheila"
-    mail = "nonebot.adapters.mail"
-    milky = "nonebot.adapters.milky"
-    minecraft = "nonebot.adapters.minecraft"
-    mirai = "nonebot.adapters.mirai"
-    ntchat = "nonebot.adapters.ntchat"
-    onebot11 = "nonebot.adapters.onebot.v11"
-    onebot12 = "nonebot.adapters.onebot.v12"
-    qq = "nonebot.adapters.qq"
-    red = "nonebot.adapters.red"
-    satori = "nonebot.adapters.satori"
-    telegram = "nonebot.adapters.telegram"
-    tail_chat = "nonebot_adapter_tailchat"
-    wxmp = "nonebot.adapters.wxmp"
+supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna")
 
 __version__ = "0.2.4"
 
@@ -62,7 +39,7 @@ __plugin_meta__ = PluginMetadata(
         "https://github.com/bananaxiao2333/nonebot-plugin-uptime-kuma-puller"
     ),
     config=Config,
-    supported_adapters=set(SupportAdapterModule.__members__.values()),
+    supported_adapters=supported_adapters,
     extra={},
 )
 
